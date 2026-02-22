@@ -25,7 +25,7 @@ function App() {
   useEffect(() => {
     const loadKMLData = async () => {
       try {
-        const response = await fetch("/Reserva%20Bosques%20de%20Agua.kml");
+        const response = await fetch(`${import.meta.env.BASE_URL}Reserva%20Bosques%20de%20Agua.kml`);
         if (!response.ok) throw new Error("Network response was not ok");
         const text = await response.text();
         const kmlDoc = new DOMParser().parseFromString(text, "text/xml");
