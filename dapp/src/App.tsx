@@ -5,6 +5,7 @@ import { defaultModules } from "@creit-tech/stellar-wallets-kit/modules/utils";
 import "./App.css";
 import MapComponent from "./components/MapComponent";
 import type { LotFeature } from "./components/MapComponent";
+import { useAlertDialog } from "./hooks/useAlertDialog";
 import BoscoraNFT from "./contracts/soroban_boscora_nft";
 import { useTranslation } from "react-i18next";
 
@@ -22,6 +23,7 @@ function App() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [publicKey, setPublicKey] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
+  const { showAlert, AlertDialogComponent } = useAlertDialog();
   const { t, i18n } = useTranslation();
 
   const toggleLanguage = () => {
@@ -132,7 +134,7 @@ function App() {
 
   const handleDonate = async () => {
     if (!walletConnected || selectedLotIds.length === 0) {
-      alert(t('sidebar.alert_connect'));
+      showAlert(t('sidebar.alert_connect'));
       return;
     }
 
@@ -183,7 +185,7 @@ function App() {
       setShowModal(true);
     } catch (e) {
       console.error("Failed to mint NFT:", e);
-      alert(t('sidebar.alert_fail'));
+      showAlert(t('sidebar.alert_fail'));
     } finally {
       setIsLoading(false);
     }
@@ -198,6 +200,8 @@ function App() {
           <p>{t('app.syncing')}</p>
         </div>
       )}
+
+      <AlertDialogComponent />
 
       {showModal && (
         <div className="modal-overlay">

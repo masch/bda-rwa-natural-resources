@@ -11,6 +11,7 @@ const resources = {
                 "connected": "✅",
                 "loading": "Loading Water Forests...",
                 "syncing": "Syncing KMZ and Oracle Data",
+                "alert_title": "Notice"
             },
             "modal": {
                 "title": "Thank you for your contribution! 🌿",
@@ -50,6 +51,7 @@ const resources = {
                 "connected": "✅",
                 "loading": "Cargando Bosques de Agua...",
                 "syncing": "Sincronizando KMZ y Oracle Datos",
+                "alert_title": "Aviso"
             },
             "modal": {
                 "title": "¡Gracias por tu contribución! 🌿",
