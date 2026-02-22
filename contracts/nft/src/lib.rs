@@ -1,8 +1,11 @@
 #![no_std]
-
-use soroban_sdk::{contract, contractclient, contractimpl, contracttype, Address, Env, String};
+use soroban_sdk::{
+    contract, contractclient, contractimpl, contracttype, panic_with_error, Address, Env, String,
+};
 use stellar_access::ownable::{self, Ownable};
 use stellar_tokens::non_fungible::{Base, NonFungibleToken};
+
+mod errors;
 
 // --- Data Structures ---
 
@@ -100,37 +103,48 @@ impl BoscoraNFT {
             .storage()
             .instance()
             .get(&DataKey::MaxParcels)
-            .expect("max parcels not set");
+            .unwrap_or_else(|| {
+                panic_with_error!(&env, &crate::errors::ContractErrors::MaxParcelsNotSet)
+            });
 
-        let owner = ownable::get_owner(&env).expect("owner not set");
+        // 3. Load payment token
+        let owner = ownable::get_owner(&env).unwrap_or_else(|| {
+            panic_with_error!(&env, &crate::errors::ContractErrors::OwnerNotSet)
+        });
         let payment_token_addr: Address = env
             .storage()
             .instance()
             .get(&DataKey::PaymentToken)
-            .expect("payment token not set");
+            .unwrap_or_else(|| {
+                panic_with_error!(&env, &crate::errors::ContractErrors::PaymentTokenNotSet)
+            });
         let token_client = soroban_sdk::token::Client::new(&env, &payment_token_addr);
 
         let price: i128 = env
             .storage()
             .instance()
             .get(&DataKey::Price)
-            .expect("price not set");
+            .unwrap_or_else(|| {
+                panic_with_error!(&env, &crate::errors::ContractErrors::PriceNotSet)
+            });
 
         // 4. Charge payment token
         let amount_to_charge = price * parcels.len() as i128;
         token_client.transfer(&to, &owner, &amount_to_charge);
 
+        // 5. Mint all parcels selected
         for parcel in parcels.iter() {
             let token_id = parcel.token_id;
             if token_id == 0 || token_id > max_parcels {
-                panic!("invalid parcel id: only 1 to max are allowed in the reserve");
+                panic_with_error!(&env, &crate::errors::ContractErrors::InvalidParcelId);
             }
 
-            // 3. Ensure each parcel is minted only once
+            // 6. Ensure each parcel is minted only once
             if env.storage().persistent().has(&DataKey::Geo(token_id)) {
-                panic!("duplicate id: parcel already donated/minted");
+                panic_with_error!(&env, &crate::errors::ContractErrors::ParcelAlreadyDonated);
             }
 
+            // 7. Mint NFT
             Base::mint(&env, &to, token_id);
             env.storage()
                 .persistent()
@@ -144,12 +158,14 @@ impl BoscoraNFT {
             .storage()
             .instance()
             .get(&DataKey::OracleContract)
-            .expect("oracle address not set");
+            .unwrap_or_else(|| {
+                panic_with_error!(&env, &crate::errors::ContractErrors::OracleAddressNotSet)
+            });
 
         let oracle_client = OracleClient::new(&env, &oracle_addr);
-        oracle_client
-            .get_metrics(&token_id)
-            .expect("metrics not found in oracle")
+        oracle_client.get_metrics(&token_id).unwrap_or_else(|| {
+            panic_with_error!(&env, &crate::errors::ContractErrors::MetricsNotFound)
+        })
     }
 
     /// Getter for parcel coordinates.
@@ -157,7 +173,9 @@ impl BoscoraNFT {
         env.storage()
             .persistent()
             .get(&DataKey::Geo(token_id))
-            .expect("no geo data found")
+            .unwrap_or_else(|| {
+                panic_with_error!(&env, &crate::errors::ContractErrors::NoGeoDataFound)
+            })
     }
 
     /// Explicitly expose owner_of for the client.

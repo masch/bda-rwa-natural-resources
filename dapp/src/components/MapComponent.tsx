@@ -160,9 +160,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
               geometry: e.features[0].geometry,
             };
             onToggleLot(lot);
-          } else if (props && (props.status === "donated" || props.status === "owned")) {
+          } else if (
+            props &&
+            (props.status === "donated" || props.status === "owned")
+          ) {
             const isOwned = props.status === "owned";
-            const badge = isOwned ? `<span style="background: #fbbf24; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: bold;">${t("popup.owned_nft")}</span>` : "";
+            const badge = isOwned
+              ? `<span style="background: #fbbf24; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: bold;">${t("popup.owned_nft")}</span>`
+              : "";
             const priceColor = isOwned ? "#f59e0b" : "#647558";
 
             const html = `

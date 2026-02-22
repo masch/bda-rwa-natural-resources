@@ -140,21 +140,28 @@ function App() {
 
   const totalLots = lots.length;
   // Progress calculates ALL unavailable lots (both donated by others + owned by me)
-  const donatedLots = lots.filter((l) => l.status === "donated" || l.status === "owned").length;
-  const progressPercentage = totalLots > 0 ? (donatedLots / totalLots) * 100 : 0;
+  const donatedLots = lots.filter(
+    (l) => l.status === "donated" || l.status === "owned",
+  ).length;
+  const progressPercentage =
+    totalLots > 0 ? (donatedLots / totalLots) * 100 : 0;
 
   // Apply ownership dynamically when wallet connects/disconnects
   useEffect(() => {
     if (lots.length > 0) {
-      setLots(prev => {
+      setLots((prev) => {
         let hasChanges = false;
         const savedLotsStr = localStorage.getItem("bda_my_bought_lots");
-        const savedLots: string[] = savedLotsStr ? JSON.parse(savedLotsStr) : [];
+        const savedLots: string[] = savedLotsStr
+          ? JSON.parse(savedLotsStr)
+          : [];
 
-        const next = prev.map(l => {
+        const next = prev.map((l) => {
           // Si el lote está en Local Storage
           if (savedLots.includes(l.id)) {
-            const targetStatus: "owned" | "donated" = walletConnected ? "owned" : "donated";
+            const targetStatus: "owned" | "donated" = walletConnected
+              ? "owned"
+              : "donated";
             if (l.status !== targetStatus) {
               hasChanges = true;
               return { ...l, status: targetStatus };
@@ -169,7 +176,11 @@ function App() {
         });
 
         // Mock 13 own lots si no tienen ningún lote comprado real y conectan, para la Demo.
-        if (walletConnected && savedLots.length === 0 && !next.some(l => l.status === "owned")) {
+        if (
+          walletConnected &&
+          savedLots.length === 0 &&
+          !next.some((l) => l.status === "owned")
+        ) {
           let count = 0;
           for (let i = 0; i < next.length && count < 13; i++) {
             if (next[i].status === "donated") {
@@ -187,7 +198,7 @@ function App() {
 
   // Sync myOwnedLots purely from local mock state
   useEffect(() => {
-    setMyOwnedLots(lots.filter(l => l.status === "owned"));
+    setMyOwnedLots(lots.filter((l) => l.status === "owned"));
   }, [lots]);
 
   const handleConnectWallet = async () => {
@@ -254,7 +265,9 @@ function App() {
       // Save to localStorage so they persist on refresh
       const savedLotsStr = localStorage.getItem("bda_my_bought_lots");
       const savedLots: string[] = savedLotsStr ? JSON.parse(savedLotsStr) : [];
-      const newSavedLots = Array.from(new Set([...savedLots, ...selectedLotIds]));
+      const newSavedLots = Array.from(
+        new Set([...savedLots, ...selectedLotIds]),
+      );
       localStorage.setItem("bda_my_bought_lots", JSON.stringify(newSavedLots));
 
       setSelectedLotIds([]);
@@ -308,26 +321,95 @@ function App() {
           <div className="modal-content" style={{ maxWidth: "600px" }}>
             <div className="modal-header">
               <h3>{t("modal.my_parcels")}</h3>
-              <button className="close-btn" onClick={() => setShowMyLots(false)}>
+              <button
+                className="close-btn"
+                onClick={() => setShowMyLots(false)}
+              >
                 &times;
               </button>
             </div>
 
             {myOwnedLots.length === 0 ? (
-              <p style={{ color: "#a1a1aa", textAlign: "center", padding: "2rem" }}>
+              <p
+                style={{
+                  color: "#a1a1aa",
+                  textAlign: "center",
+                  padding: "2rem",
+                }}
+              >
                 {t("modal.no_parcels")}
               </p>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1rem", maxHeight: "60vh", overflowY: "auto", paddingRight: "0.5rem" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                  gap: "1rem",
+                  maxHeight: "60vh",
+                  overflowY: "auto",
+                  paddingRight: "0.5rem",
+                }}
+              >
                 {myOwnedLots.map((lot, idx) => (
-                  <div key={idx} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(100, 117, 88, 0.4)", borderRadius: "8px", padding: "1rem" }}>
-                    <div style={{ fontSize: "2rem", marginBottom: "0.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div
+                    key={idx}
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(100, 117, 88, 0.4)",
+                      borderRadius: "8px",
+                      padding: "1rem",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "2rem",
+                        marginBottom: "0.5rem",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
                       <span>🌿</span>
-                      <span style={{ fontSize: "0.7rem", color: "#647558", background: "rgba(100, 117, 88, 0.2)", padding: "2px 6px", borderRadius: "4px" }}>NFT</span>
+                      <span
+                        style={{
+                          fontSize: "0.7rem",
+                          color: "#647558",
+                          background: "rgba(100, 117, 88, 0.2)",
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        NFT
+                      </span>
                     </div>
-                    <h4 style={{ margin: "0 0 0.5rem 0", color: "#fff", fontSize: "1rem" }}>{lot.name}</h4>
-                    <p style={{ margin: 0, fontSize: "0.8rem", color: "#a1a1aa" }}>{t("modal.protected_minted")}</p>
-                    <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.75rem", color: "#647558", fontWeight: 700 }}>{lot.price} USDC</p>
+                    <h4
+                      style={{
+                        margin: "0 0 0.5rem 0",
+                        color: "#fff",
+                        fontSize: "1rem",
+                      }}
+                    >
+                      {lot.name}
+                    </h4>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "0.8rem",
+                        color: "#a1a1aa",
+                      }}
+                    >
+                      {t("modal.protected_minted")}
+                    </p>
+                    <p
+                      style={{
+                        margin: "0.5rem 0 0 0",
+                        fontSize: "0.75rem",
+                        color: "#647558",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {lot.price} USDC
+                    </p>
                   </div>
                 ))}
               </div>
@@ -351,9 +433,23 @@ function App() {
               boxShadow: "0 0 15px rgba(16, 185, 129, 0.2)",
             }}
           />
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", whiteSpace: "nowrap" }}>
-            <span style={{ lineHeight: 1.1 }}>{t("app.title").replace(" (BDA)", "")}</span>
-            <span style={{ fontSize: "0.8rem", color: "#a1a1aa", lineHeight: 1.1 }}>(BDA)</span>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span style={{ lineHeight: 1.1 }}>
+              {t("app.title").replace(" (BDA)", "")}
+            </span>
+            <span
+              style={{ fontSize: "0.8rem", color: "#a1a1aa", lineHeight: 1.1 }}
+            >
+              (BDA)
+            </span>
           </div>
         </h1>
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
@@ -364,7 +460,7 @@ function App() {
                 background: "rgba(100, 117, 88, 0.15)",
                 borderColor: "#647558",
                 color: "#647558",
-                whiteSpace: "nowrap"
+                whiteSpace: "nowrap",
               }}
               onClick={() => setShowMyLots(true)}
             >
@@ -377,13 +473,17 @@ function App() {
               background: "transparent",
               color: "white",
               padding: "8px 12px",
-              whiteSpace: "nowrap"
+              whiteSpace: "nowrap",
             }}
             onClick={toggleLanguage}
           >
             {currentLanguage === "es" ? "🇺🇸" : "🇪🇸"}
           </button>
-          <button className="connect-wallet-btn" onClick={handleConnectWallet} style={{ whiteSpace: "nowrap" }}>
+          <button
+            className="connect-wallet-btn"
+            onClick={handleConnectWallet}
+            style={{ whiteSpace: "nowrap" }}
+          >
             {walletConnected
               ? `${t("app.connected")} ${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`
               : `🔗 ${t("app.connect")}`}
@@ -405,39 +505,86 @@ function App() {
           <div className="map-legend" style={{ minWidth: "300px" }}>
             {totalLots > 0 && (
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", gap: "1.5rem" }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1 }}>
-                    <span style={{ fontSize: "1.05rem", fontWeight: 700, color: "#fff" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "1rem",
+                    gap: "1.5rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                      flex: 1,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "1.05rem",
+                        fontWeight: 700,
+                        color: "#fff",
+                      }}
+                    >
                       {t("map.progress_title")}
                     </span>
                     <span style={{ fontSize: "0.85rem", color: "#a1a1aa" }}>
-                      <strong style={{ color: "#fff" }}>{donatedLots}</strong> / {totalLots}{" "}
-                      {t("map.progress_subtitle")}
+                      <strong style={{ color: "#fff" }}>{donatedLots}</strong> /{" "}
+                      {totalLots} {t("map.progress_subtitle")}
                     </span>
                   </div>
-                  <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "rgba(100, 117, 88, 0.15)",
-                    border: "1px solid rgba(100, 117, 88, 0.5)",
-                    color: "#798c6a",
-                    fontWeight: 800,
-                    fontSize: "0.95rem",
-                    height: "56px",
-                    width: "56px",
-                    minWidth: "56px",
-                    flexShrink: 0,
-                    borderRadius: "50%",
-                    boxShadow: "0 0 15px rgba(100, 117, 88, 0.1)"
-                  }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "rgba(100, 117, 88, 0.15)",
+                      border: "1px solid rgba(100, 117, 88, 0.5)",
+                      color: "#798c6a",
+                      fontWeight: 800,
+                      fontSize: "0.95rem",
+                      height: "56px",
+                      width: "56px",
+                      minWidth: "56px",
+                      flexShrink: 0,
+                      borderRadius: "50%",
+                      boxShadow: "0 0 15px rgba(100, 117, 88, 0.1)",
+                    }}
+                  >
                     {progressPercentage.toFixed(0)}%
                   </div>
                 </div>
-                <div style={{ width: "100%", height: "10px", backgroundColor: "rgba(255, 255, 255, 0.1)", borderRadius: "5px", overflow: "hidden", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.5)" }}>
-                  <div style={{ width: `${progressPercentage}%`, height: "100%", backgroundColor: "#647558", background: "linear-gradient(90deg, #4f5c45 0%, #647558 100%)", transition: "width 0.8s ease-in-out" }}></div>
+                <div
+                  style={{
+                    width: "100%",
+                    height: "10px",
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    borderRadius: "5px",
+                    overflow: "hidden",
+                    boxShadow: "inset 0 1px 3px rgba(0,0,0,0.5)",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${progressPercentage}%`,
+                      height: "100%",
+                      backgroundColor: "#647558",
+                      background:
+                        "linear-gradient(90deg, #4f5c45 0%, #647558 100%)",
+                      transition: "width 0.8s ease-in-out",
+                    }}
+                  ></div>
                 </div>
-                <hr style={{ borderColor: "rgba(255, 255, 255, 0.1)", margin: "1.25rem 0 0.5rem 0", borderWidth: "1px 0 0 0" }} />
+                <hr
+                  style={{
+                    borderColor: "rgba(255, 255, 255, 0.1)",
+                    margin: "1.25rem 0 0.5rem 0",
+                    borderWidth: "1px 0 0 0",
+                  }}
+                />
               </div>
             )}
 
@@ -447,7 +594,10 @@ function App() {
             </div>
             {walletConnected && (
               <div className="legend-item">
-                <div className="legend-color" style={{ background: "#fbbf24", border: "1px solid #f59e0b" }}></div>
+                <div
+                  className="legend-color"
+                  style={{ background: "#fbbf24", border: "1px solid #f59e0b" }}
+                ></div>
                 <span>{t("map.legend.owned")}</span>
               </div>
             )}
