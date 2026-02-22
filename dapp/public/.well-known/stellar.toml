@@ -1,0 +1,27 @@
+# General organizational information
+[DOCUMENTATION]
+ORG_NAME="Bosques de Agua (BDA)"
+ORG_DBA="Boscora Impacta"
+ORG_URL="https://bosquesdeagua.ar"
+ORG_LOGO="https://bosquesdeagua.ar/wp-content/uploads/2023/11/cropped-Diseno-sin-titulo-1-1-32x32.png"
+ORG_DESCRIPTION="Conservación y Reforestación en las Sierras de Córdoba, Argentina, respaldado por la transparencia de la tecnología de Stellar y Soroban."
+ORG_PHYSICAL_ADDRESS="Sierras de Córdoba, Argentina"
+ORG_TWITTER="bosquesdeagua"
+ORG_OFFICIAL_EMAIL="contacto@bosquesdeagua.ar"
+
+# Contact information for issue resolution
+[PRINCIPALS]
+name="Bosques de Agua Directiva"
+email="soporte@bosquesdeagua.ar"
+
+# Currencies / Tokens / NFTs issued by the organization
+[[CURRENCIES]]
+code="BSCR"
+issuer="GCLUHDCYTU2ZO55HGXAYGWJ74F6F2AX5LJD37HQQCSWCC5WTU75GD4AF"
+display_decimals=0
+name="Boscora NFT"
+desc="Parcela de Conservación de Bosques de Agua respaldada en Real World Assets (RWA)"
+status="live"
+is_asset_anchored=false
+is_nft=true
+image="https://bosquesdeagua.ar/wp-content/uploads/2023/11/cropped-Diseno-sin-titulo-1-1-32x32.png"

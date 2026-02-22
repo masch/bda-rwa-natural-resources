@@ -58,6 +58,9 @@ clean:
 	rm target/wasm32v1-none/release/*.d
 	cargo clean
 
+admin_address:
+	@echo "Admin address: $$(stellar keys address $(admin))"
+
 # --------- CONTRACT BUILD/TEST/DEPLOY --------- #
 
 # Build the contract
