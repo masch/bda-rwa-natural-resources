@@ -28,6 +28,7 @@ pub enum DataKey {
     OracleContract, // Address of the Oracle contract
     Geo(u32),       // token_id -> GeoCoordinates
     MaxParcels,     // Maximum number of parcels
+    PaymentToken,   // Address of the USDC/Payment token
 }
 
 #[contracttype]
@@ -52,7 +53,13 @@ pub struct BoscoraNFT;
 
 #[contractimpl]
 impl BoscoraNFT {
-    pub fn __constructor(env: Env, admin: Address, oracle: Address, max_parcels: u32) {
+    pub fn __constructor(
+        env: Env,
+        admin: Address,
+        oracle: Address,
+        max_parcels: u32,
+        payment_token: Address,
+    ) {
         ownable::set_owner(&env, &admin);
         env.storage()
             .instance()
@@ -60,6 +67,9 @@ impl BoscoraNFT {
         env.storage()
             .instance()
             .set(&DataKey::MaxParcels, &max_parcels);
+        env.storage()
+            .instance()
+            .set(&DataKey::PaymentToken, &payment_token);
 
         // Initialize NFT collection metadata (SEP-50)
         Base::set_metadata(
@@ -90,17 +100,17 @@ impl BoscoraNFT {
             panic!("duplicate id: parcel already donated/minted");
         }
 
-        // 4. Charge 50 XLM and send to the owner
+        // 4. Charge 50 payment token configured
         let owner = ownable::get_owner(&env).expect("owner not set");
 
-        // Native token (XLM) cross-contract address for Testnet
-        let native_token: Address = Address::from_string(&String::from_str(
-            &env,
-            "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
-        ));
-        let token_client = soroban_sdk::token::Client::new(&env, &native_token);
+        let payment_token_addr: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::PaymentToken)
+            .expect("payment token not set");
+        let token_client = soroban_sdk::token::Client::new(&env, &payment_token_addr);
 
-        let amount_to_charge: i128 = 50_000_0000; // 50 XLM (7 decimals)
+        let amount_to_charge: i128 = 50_000_0000; // 50 Tokens (assuming 7 decimals)
 
         // Transfer native token from user to owner (requires auth from user)
         token_client.transfer(&to, &owner, &amount_to_charge);
@@ -211,8 +221,21 @@ mod test {
         let oracle_id = env.register(MockOracle, (rpi_signer.clone(),));
         let oracle_client = MockOracleClient::new(&env, &oracle_id);
 
+        // Create a mock token for testing
+        let payment_token = env
+            .register_stellar_asset_contract_v2(admin.clone())
+            .address();
+
         // 2. Deploy NFT
-        let nft_id = env.register(BoscoraNFT, (admin.clone(), oracle_id.clone(), 500u32));
+        let nft_id = env.register(
+            BoscoraNFT,
+            (
+                admin.clone(),
+                oracle_id.clone(),
+                500u32,
+                payment_token.clone(),
+            ),
+        );
         let nft_client = BoscoraNFTClient::new(&env, &nft_id);
 
         let token_id = 101;
@@ -220,6 +243,10 @@ mod test {
             latitude: -34,
             longitude: -58,
         };
+
+        // Mint mock tokens to the investor
+        soroban_sdk::token::StellarAssetClient::new(&env, &payment_token)
+            .mint(&investor, &100_000_0000);
 
         // 3. Mint NFT (Authorized)
         nft_client.mint(&investor, &token_id, &geo);
@@ -244,7 +271,11 @@ mod test {
         let attacker = Address::generate(&env);
         let oracle = Address::generate(&env);
 
-        let nft_id = env.register(BoscoraNFT, (admin, oracle, 500u32));
+        let payment_token = env
+            .register_stellar_asset_contract_v2(admin.clone())
+            .address();
+
+        let nft_id = env.register(BoscoraNFT, (admin, oracle, 500u32, payment_token));
         let nft_client = BoscoraNFTClient::new(&env, &nft_id);
 
         // Attacker tries to mint

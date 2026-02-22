@@ -1,5 +1,4 @@
-# --- Boscora Impacta Makefile ---
-.PHONY: dapp dapp_install prepare-network prepare funds clean contract_build contract_test contract_build-release contract_bindings contract_deploy testnet_reset help
+.PHONY: dapp dapp_install prepare-network prepare funds clean contract_build contract_test contract_build-release contract_bindings contract_deploy testnet_reset change-trust sync-env help
 
 ifndef network
    override network = testnet
@@ -11,6 +10,16 @@ endif
 
 ifndef admin
    override admin = mando-$(network)
+endif
+
+ifndef payment_token
+   # Default USDC testnet token (or any valid stellar asset for testing)
+   override payment_token = CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA
+endif
+
+ifndef payment_asset
+   # Default USDC testnet asset (or any valid stellar asset for testing)
+   override payment_asset = GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
 endif
 
 override boscora_nft_id = $(shell cat .stellar/boscora_nft_id-$(network))
@@ -100,6 +109,7 @@ contract_deploy:  ## Deploy Soroban contract to testnet
   		--admin $(shell stellar keys address $(admin)) \
   		--oracle $$(cat .stellar/boscora_oracle_id-$(network)) \
   		--max_parcels 500 \
+		--payment_token $(payment_token) \
   		> .stellar/boscora_nft_id-$(network)
 	@echo "NFT deployed at: $$(cat .stellar/boscora_nft_id-$(network))"
 
@@ -108,8 +118,24 @@ contract_deploy:  ## Deploy Soroban contract to testnet
 
 testnet_reset:  ## Playbook for testnet reset
 	make funds && \
+	make change-trust && \
 	make contract_bindings && \
-	make contract_deploy
+	make contract_deploy && \
+	make sync-env
+
+change-trust: ## Change trust line to allow to receive token asset
+	stellar tx new change-trust \
+		--source-account $(admin) \
+		--network ${network} \
+		--line USDC:$(payment_asset)
+
+sync-env: ## Sync contract ID to website env
+	@if grep -q "^PUBLIC_BOSCORA_NFT_CONTRACT_ID=" dapp/.env; then \
+		sed -i 's/^PUBLIC_BOSCORA_NFT_CONTRACT_ID=.*/PUBLIC_BOSCORA_NFT_CONTRACT_ID="'$$(cat .stellar/boscora_nft_id-$(network))'"/' dapp/.env; \
+	else \
+		echo 'PUBLIC_BOSCORA_NFT_CONTRACT_ID="'$$(cat .stellar/boscora_nft_id-$(network))'"' >> dapp/.env; \
+	fi
+	@echo "Env synced for dapp"
 
 # Quick help
 help:
@@ -122,4 +148,6 @@ help:
 	@echo "  make contract_test  - Run unit tests"
 	@echo "  make clean          - Remove build artifacts"
 	@echo "  make testnet_reset  - Playbook for testnet reset"
+	@echo "  make change-trust   - Change trust line to allow to receive asset tokens"
+	@echo "  make sync-env       - Sync contract ID to website-impacta/.env"
 	@echo "  make help           - Show this help message"
