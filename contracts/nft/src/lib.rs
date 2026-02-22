@@ -172,8 +172,9 @@ impl NonFungibleToken for BoscoraNFT {
     type ContractType = Base;
 
     fn token_uri(env: &Env, _token_id: u32) -> String {
-        // Pointing to a static explanation of why this NFT uses an Oracle
-        String::from_str(env, "ipfs://boscora-dynamic-impact-oracle")
+        // Pointing to a static JSON payload inside the contract: Data URI Base64
+        // {"name":"Boscora - Impacta","description":"Parcela de Restauracion en Bosques de Agua","image":"https://bosquesdeagua.ar/logo.png"}
+        String::from_str(env, "data:application/json;base64,eyJuYW1lIjoiQm9zY29yYSAtIEltcGFjdGEiLCJkZXNjcmlwdGlvbiI6IlBhcmNlbGEgZGUgUmVzdGF1cmFjaW9uIGVuIEJvc3F1ZXMgZGUgQWd1YSIsImltYWdlIjoiaHR0cHM6Ly9ib3NxdWVzZGVhZ3VhLmFyL2xvZ28ucG5nIn0=")
     }
 }
 

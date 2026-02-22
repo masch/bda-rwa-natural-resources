@@ -9,7 +9,7 @@ export interface LotFeature {
   id: string;
   name: string;
   price: number;
-  status: "available" | "donated";
+  status: "available" | "donated" | "owned";
   geometry: any;
 }
 
@@ -68,6 +68,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
           "fill-color": [
             "match",
             ["get", "status"],
+            "owned",
+            "#fbbf24", // Warm amber/gold for user's owned parcels
             "donated",
             "#647558", // Green for donated (reforested)
             "rgba(255, 255, 255, 0.1)", // Transparent white for available
@@ -78,6 +80,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
             0.8,
             ["boolean", ["feature-state", "hover"], false],
             0.6,
+            ["==", ["get", "status"], "owned"],
+            0.85,
             ["==", ["get", "status"], "donated"],
             0.8,
             0.4,
@@ -98,6 +102,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
             [
               "match",
               ["get", "status"],
+              "owned",
+              "#f59e0b",
               "donated",
               "#4f5c45",
               "rgba(255, 255, 255, 0.4)",
@@ -154,12 +160,16 @@ const MapComponent: React.FC<MapComponentProps> = ({
               geometry: e.features[0].geometry,
             };
             onToggleLot(lot);
-          } else if (props && props.status === "donated") {
+          } else if (props && (props.status === "donated" || props.status === "owned")) {
+            const isOwned = props.status === "owned";
+            const badge = isOwned ? `<span style="background: #fbbf24; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: bold;">${t("popup.owned_nft")}</span>` : "";
+            const priceColor = isOwned ? "#f59e0b" : "#647558";
+
             const html = `
                             <div style="color: #333; font-family: 'Montserrat', sans-serif;">
-                                <h4 style="margin: 0 0 5px 0; font-size: 15px;">🌳 ${props.name}</h4>
+                                <h4 style="margin: 0 0 5px 0; font-size: 15px; display: flex; align-items: center;">🌳 ${props.name} ${badge}</h4>
                                 <p style="margin: 0; font-size: 13px;">${t("popup.partOf")}</p>
-                                <p style="margin: 5px 0 0 0; font-size: 13px; font-weight: bold; color: #647558;">${t("popup.value")} ${props.price} ${import.meta.env.PUBLIC_DONATION_ASSET || "USDC"}</p>
+                                <p style="margin: 5px 0 0 0; font-size: 13px; font-weight: bold; color: ${priceColor};">${t("popup.value")} ${props.price} USDC</p>
                                 <p style="margin: 5px 0 0 0; font-size: 11px; color: #666;">${t("popup.protected")}</p>
                             </div>
                         `;

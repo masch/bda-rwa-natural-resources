@@ -24,6 +24,8 @@ function App() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [publicKey, setPublicKey] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
+  const [showMyLots, setShowMyLots] = useState(false);
+  const [myOwnedLots, setMyOwnedLots] = useState<LotFeature[]>([]);
   const { showAlert, AlertDialogComponent } = useAlertDialog();
   const { t, currentLanguage, toggleLanguage } = useAppTranslation();
 
@@ -82,18 +84,29 @@ function App() {
         // Take exactly 500 lots
         const exact500 = intersecting.slice(0, 500);
 
-        // Shuffle arrays to scatter the donated ones, or just randomly set 83 donated.
-        // Let's create an array of 83 true and 417 false, then shuffle.
+        // Let's create an array of 83 donated
         const statuses = Array(500).fill("available");
         for (let i = 0; i < 83; i++) statuses[i] = "donated";
         statuses.sort(() => Math.random() - 0.5);
 
         const parsedLots: LotFeature[] = exact500.map((f, idx) => {
+          const tokenId = idx + 1; // 1 to 500 since contract prevents token 0
+          const lotId = `lot-${tokenId}`;
+          let status: "donated" | "available" | "owned" = statuses[idx] as any;
+
+          const savedLotsStr = localStorage.getItem("bda_my_bought_lots");
+          if (savedLotsStr) {
+            const savedLots: string[] = JSON.parse(savedLotsStr);
+            if (savedLots.includes(lotId)) {
+              status = "donated"; // Shows as donated to anonymous users
+            }
+          }
+
           return {
-            id: `lot-${idx}`,
-            name: `Parcela BDA-${(idx + 1).toString().padStart(3, "0")}`,
+            id: lotId,
+            name: `Parcela BDA-${tokenId.toString().padStart(3, "0")}`,
             price: Number(import.meta.env.PUBLIC_DONATION_PRICE) || 50,
-            status: statuses[idx] as "donated" | "available",
+            status,
             geometry: f.geometry,
           };
         });
@@ -126,8 +139,56 @@ function App() {
   );
 
   const totalLots = lots.length;
-  const donatedLots = lots.filter((l) => l.status === "donated").length;
+  // Progress calculates ALL unavailable lots (both donated by others + owned by me)
+  const donatedLots = lots.filter((l) => l.status === "donated" || l.status === "owned").length;
   const progressPercentage = totalLots > 0 ? (donatedLots / totalLots) * 100 : 0;
+
+  // Apply ownership dynamically when wallet connects/disconnects
+  useEffect(() => {
+    if (lots.length > 0) {
+      setLots(prev => {
+        let hasChanges = false;
+        const savedLotsStr = localStorage.getItem("bda_my_bought_lots");
+        const savedLots: string[] = savedLotsStr ? JSON.parse(savedLotsStr) : [];
+
+        const next = prev.map(l => {
+          // Si el lote está en Local Storage
+          if (savedLots.includes(l.id)) {
+            const targetStatus: "owned" | "donated" = walletConnected ? "owned" : "donated";
+            if (l.status !== targetStatus) {
+              hasChanges = true;
+              return { ...l, status: targetStatus };
+            }
+          }
+          // Si es un "mock" anterior que forzamos o queremos limpiar
+          else if (l.status === "owned" && !walletConnected) {
+            hasChanges = true;
+            return { ...l, status: "donated" as const };
+          }
+          return l;
+        });
+
+        // Mock 13 own lots si no tienen ningún lote comprado real y conectan, para la Demo.
+        if (walletConnected && savedLots.length === 0 && !next.some(l => l.status === "owned")) {
+          let count = 0;
+          for (let i = 0; i < next.length && count < 13; i++) {
+            if (next[i].status === "donated") {
+              next[i] = { ...next[i], status: "owned" };
+              count++;
+              hasChanges = true;
+            }
+          }
+        }
+
+        return hasChanges ? next : prev;
+      });
+    }
+  }, [walletConnected, lots.length]);
+
+  // Sync myOwnedLots purely from local mock state
+  useEffect(() => {
+    setMyOwnedLots(lots.filter(l => l.status === "owned"));
+  }, [lots]);
 
   const handleConnectWallet = async () => {
     try {
@@ -183,11 +244,19 @@ function App() {
       console.log(`Donated ${parcels.length} lots! Transaction id:`, result);
 
       // Process "donation/buy" -> update local state -> show success
+      // Automatically reflect new donations directly mapping them as "owned"
       setLots((prev) =>
         prev.map((l) =>
-          selectedLotIds.includes(l.id) ? { ...l, status: "donated" } : l,
+          selectedLotIds.includes(l.id) ? { ...l, status: "owned" } : l,
         ),
       );
+
+      // Save to localStorage so they persist on refresh
+      const savedLotsStr = localStorage.getItem("bda_my_bought_lots");
+      const savedLots: string[] = savedLotsStr ? JSON.parse(savedLotsStr) : [];
+      const newSavedLots = Array.from(new Set([...savedLots, ...selectedLotIds]));
+      localStorage.setItem("bda_my_bought_lots", JSON.stringify(newSavedLots));
+
       setSelectedLotIds([]);
       setShowModal(true);
     } catch (e) {
@@ -234,6 +303,39 @@ function App() {
         </div>
       )}
 
+      {showMyLots && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: "600px" }}>
+            <div className="modal-header">
+              <h3>{t("modal.my_parcels")}</h3>
+              <button className="close-btn" onClick={() => setShowMyLots(false)}>
+                &times;
+              </button>
+            </div>
+
+            {myOwnedLots.length === 0 ? (
+              <p style={{ color: "#a1a1aa", textAlign: "center", padding: "2rem" }}>
+                {t("modal.no_parcels")}
+              </p>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1rem", maxHeight: "60vh", overflowY: "auto", paddingRight: "0.5rem" }}>
+                {myOwnedLots.map((lot, idx) => (
+                  <div key={idx} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(100, 117, 88, 0.4)", borderRadius: "8px", padding: "1rem" }}>
+                    <div style={{ fontSize: "2rem", marginBottom: "0.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span>🌿</span>
+                      <span style={{ fontSize: "0.7rem", color: "#647558", background: "rgba(100, 117, 88, 0.2)", padding: "2px 6px", borderRadius: "4px" }}>NFT</span>
+                    </div>
+                    <h4 style={{ margin: "0 0 0.5rem 0", color: "#fff", fontSize: "1rem" }}>{lot.name}</h4>
+                    <p style={{ margin: 0, fontSize: "0.8rem", color: "#a1a1aa" }}>{t("modal.protected_minted")}</p>
+                    <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.75rem", color: "#647558", fontWeight: 700 }}>{lot.price} USDC</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <header className="header">
         <h1>
           <img
@@ -254,7 +356,21 @@ function App() {
             <span style={{ fontSize: "0.8rem", color: "#a1a1aa", lineHeight: 1.1 }}>(BDA)</span>
           </div>
         </h1>
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          {myOwnedLots.length > 0 && (
+            <button
+              className="connect-wallet-btn"
+              style={{
+                background: "rgba(100, 117, 88, 0.15)",
+                borderColor: "#647558",
+                color: "#647558",
+                whiteSpace: "nowrap"
+              }}
+              onClick={() => setShowMyLots(true)}
+            >
+              🌿 {myOwnedLots.length}
+            </button>
+          )}
           <button
             className="connect-wallet-btn"
             style={{
@@ -329,6 +445,12 @@ function App() {
               <div className="legend-color donated"></div>
               <span>{t("map.legend.donated")}</span>
             </div>
+            {walletConnected && (
+              <div className="legend-item">
+                <div className="legend-color" style={{ background: "#fbbf24", border: "1px solid #f59e0b" }}></div>
+                <span>{t("map.legend.owned")}</span>
+              </div>
+            )}
             <div className="legend-item">
               <div className="legend-color available"></div>
               <span>{t("map.legend.available")}</span>
