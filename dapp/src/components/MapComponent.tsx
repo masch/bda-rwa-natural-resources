@@ -153,7 +153,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
                             <div style="color: #333; font-family: 'Outfit', sans-serif;">
                                 <h4 style="margin: 0 0 5px 0; font-size: 15px;">🌳 ${props.name}</h4>
                                 <p style="margin: 0; font-size: 13px;">Esta parcela es parte de la Reserva Natural.</p>
-                                <p style="margin: 5px 0 0 0; font-size: 13px; font-weight: bold; color: #10b981;">Valor ecológico: ${props.price} XLM</p>
+                                <p style="margin: 5px 0 0 0; font-size: 13px; font-weight: bold; color: #10b981;">Valor ecológico: ${props.price} ${import.meta.env.PUBLIC_DONATION_ASSET || "USDC"}</p>
                                 <p style="margin: 5px 0 0 0; font-size: 11px; color: #666;">Protegido mediante NFT en Stellar</p>
                             </div>
                         `;
