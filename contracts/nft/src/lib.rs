@@ -6,6 +6,7 @@ use stellar_access::ownable::{self, Ownable};
 use stellar_tokens::non_fungible::{Base, NonFungibleToken};
 
 mod errors;
+mod events;
 
 // --- Data Structures ---
 
@@ -149,6 +150,13 @@ impl BoscoraNFT {
             env.storage()
                 .persistent()
                 .set(&DataKey::Geo(token_id), &parcel.geo);
+
+            // 8. Publish mint event
+            events::Mint {
+                to: to.clone(),
+                token_id,
+            }
+            .publish(&env);
         }
     }
 
