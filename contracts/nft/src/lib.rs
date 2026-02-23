@@ -1,61 +1,18 @@
 #![no_std]
-use soroban_sdk::{
-    contract, contractclient, contractimpl, contracttype, panic_with_error, Address, Env, String,
-};
+use soroban_sdk::{contract, contractclient, contractimpl, panic_with_error, Address, Env, String};
 use stellar_access::ownable::{self, Ownable};
 use stellar_tokens::non_fungible::{Base, NonFungibleToken};
 
 mod errors;
 mod events;
-
-// --- Data Structures ---
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum HealthStatus {
-    Germinating = 0,
-    Sprouted = 1,
-    ReadyForTransplant = 2,
-    Planted = 3,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ImpactMetrics {
-    pub biomass: i128,      // In grams
-    pub co2_captured: i128, // In milligrams
-    pub health: HealthStatus,
-}
-
-#[contracttype]
-pub enum DataKey {
-    OracleContract, // Address of the Oracle contract
-    Geo(u32),       // token_id -> GeoCoordinates
-    MaxParcels,     // Maximum number of parcels
-    PaymentToken,   // Address of the USDC/Payment token
-    Price,          // Price per parcel in payment token
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct GeoCoordinates {
-    pub latitude: i32,
-    pub longitude: i32,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ParcelRequest {
-    pub token_id: u32,
-    pub geo: GeoCoordinates,
-}
+mod types;
 
 // --- Oracle Interface ---
 // This allows the NFT contract to call the Oracle contract.
 
 #[contractclient(name = "OracleClient")]
 pub trait OracleInterface {
-    fn get_metrics(env: Env, asset_id: u32) -> Option<ImpactMetrics>;
+    fn get_metrics(env: Env, asset_id: u32) -> Option<types::ImpactMetrics>;
 }
 
 // --- NFT Contract (SEP-50) ---
@@ -76,14 +33,14 @@ impl BoscoraNFT {
         ownable::set_owner(&env, &admin);
         env.storage()
             .instance()
-            .set(&DataKey::OracleContract, &oracle);
+            .set(&types::DataKey::OracleContract, &oracle);
         env.storage()
             .instance()
-            .set(&DataKey::MaxParcels, &max_parcels);
+            .set(&types::DataKey::MaxParcels, &max_parcels);
         env.storage()
             .instance()
-            .set(&DataKey::PaymentToken, &payment_token);
-        env.storage().instance().set(&DataKey::Price, &price);
+            .set(&types::DataKey::PaymentToken, &payment_token);
+        env.storage().instance().set(&types::DataKey::Price, &price);
 
         // Initialize NFT collection metadata (SEP-50)
         Base::set_metadata(
@@ -95,7 +52,8 @@ impl BoscoraNFT {
     }
 
     /// Mint a new parcel NFT.
-    pub fn mint(env: Env, to: Address, parcels: soroban_sdk::Vec<ParcelRequest>) {
+    // TODO: Restore #[only_owner] macro. We need to implement backend first
+    pub fn mint(env: Env, to: Address, parcels: soroban_sdk::Vec<types::ParcelRequest>) {
         // 1. Require auth from the user minting (to pay for the transaction and the tokens)
         to.require_auth();
 
@@ -103,7 +61,7 @@ impl BoscoraNFT {
         let max_parcels: u32 = env
             .storage()
             .instance()
-            .get(&DataKey::MaxParcels)
+            .get(&types::DataKey::MaxParcels)
             .unwrap_or_else(|| {
                 panic_with_error!(&env, &crate::errors::ContractErrors::MaxParcelsNotSet)
             });
@@ -115,7 +73,7 @@ impl BoscoraNFT {
         let payment_token_addr: Address = env
             .storage()
             .instance()
-            .get(&DataKey::PaymentToken)
+            .get(&types::DataKey::PaymentToken)
             .unwrap_or_else(|| {
                 panic_with_error!(&env, &crate::errors::ContractErrors::PaymentTokenNotSet)
             });
@@ -124,7 +82,7 @@ impl BoscoraNFT {
         let price: i128 = env
             .storage()
             .instance()
-            .get(&DataKey::Price)
+            .get(&types::DataKey::Price)
             .unwrap_or_else(|| {
                 panic_with_error!(&env, &crate::errors::ContractErrors::PriceNotSet)
             });
@@ -141,7 +99,11 @@ impl BoscoraNFT {
             }
 
             // 6. Ensure each parcel is minted only once
-            if env.storage().persistent().has(&DataKey::Geo(token_id)) {
+            if env
+                .storage()
+                .persistent()
+                .has(&types::DataKey::Geo(token_id))
+            {
                 panic_with_error!(&env, &crate::errors::ContractErrors::ParcelAlreadyDonated);
             }
 
@@ -149,7 +111,7 @@ impl BoscoraNFT {
             Base::mint(&env, &to, token_id);
             env.storage()
                 .persistent()
-                .set(&DataKey::Geo(token_id), &parcel.geo);
+                .set(&types::DataKey::Geo(token_id), &parcel.geo);
 
             // 8. Publish mint event
             events::Mint {
@@ -161,11 +123,11 @@ impl BoscoraNFT {
     }
 
     /// Primary function: Query real-time impact data from the Oracle.
-    pub fn get_live_impact(env: Env, token_id: u32) -> ImpactMetrics {
+    pub fn get_live_impact(env: Env, token_id: u32) -> types::ImpactMetrics {
         let oracle_addr: Address = env
             .storage()
             .instance()
-            .get(&DataKey::OracleContract)
+            .get(&types::DataKey::OracleContract)
             .unwrap_or_else(|| {
                 panic_with_error!(&env, &crate::errors::ContractErrors::OracleAddressNotSet)
             });
@@ -177,10 +139,10 @@ impl BoscoraNFT {
     }
 
     /// Getter for parcel coordinates.
-    pub fn geo_coordinates(env: Env, token_id: u32) -> GeoCoordinates {
+    pub fn geo_coordinates(env: Env, token_id: u32) -> types::GeoCoordinates {
         env.storage()
             .persistent()
-            .get(&DataKey::Geo(token_id))
+            .get(&types::DataKey::Geo(token_id))
             .unwrap_or_else(|| {
                 panic_with_error!(&env, &crate::errors::ContractErrors::NoGeoDataFound)
             })
@@ -222,7 +184,7 @@ mod test {
         pub fn __constructor(env: Env, admin: Address) {
             ownable::set_owner(&env, &admin);
         }
-        pub fn get_metrics(env: Env, asset_id: u32) -> Option<ImpactMetrics> {
+        pub fn get_metrics(env: Env, asset_id: u32) -> Option<types::ImpactMetrics> {
             env.storage().persistent().get(&asset_id)
         }
         pub fn update_impact_metrics(
@@ -233,15 +195,15 @@ mod test {
             health: u32,
         ) {
             let status = match health {
-                0 => HealthStatus::Germinating,
-                1 => HealthStatus::Sprouted,
-                2 => HealthStatus::ReadyForTransplant,
-                3 => HealthStatus::Planted,
+                0 => types::HealthStatus::Germinating,
+                1 => types::HealthStatus::Sprouted,
+                2 => types::HealthStatus::ReadyForTransplant,
+                3 => types::HealthStatus::Planted,
                 _ => panic!(),
             };
             env.storage().persistent().set(
                 &asset_id,
-                &ImpactMetrics {
+                &types::ImpactMetrics {
                     biomass,
                     co2_captured: co2,
                     health: status,
@@ -284,7 +246,7 @@ mod test {
         let nft_client = BoscoraNFTClient::new(&env, &nft_id);
 
         let token_id = 101;
-        let geo = GeoCoordinates {
+        let geo = types::GeoCoordinates {
             latitude: -34,
             longitude: -58,
         };
@@ -298,7 +260,7 @@ mod test {
             &investor,
             &soroban_sdk::vec![
                 &env,
-                ParcelRequest {
+                types::ParcelRequest {
                     token_id,
                     geo: geo.clone()
                 }
@@ -314,7 +276,7 @@ mod test {
         let impact = nft_client.get_live_impact(&token_id);
         assert_eq!(impact.biomass, 1500);
         assert_eq!(impact.co2_captured, 450);
-        assert_eq!(impact.health, HealthStatus::Planted);
+        assert_eq!(impact.health, types::HealthStatus::Planted);
     }
 
     #[test]
@@ -340,9 +302,9 @@ mod test {
             &attacker,
             &soroban_sdk::vec![
                 &env,
-                ParcelRequest {
+                types::ParcelRequest {
                     token_id: 1,
-                    geo: GeoCoordinates {
+                    geo: types::GeoCoordinates {
                         latitude: 0,
                         longitude: 0,
                     },
