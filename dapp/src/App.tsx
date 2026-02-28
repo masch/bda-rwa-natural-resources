@@ -25,6 +25,7 @@ function App() {
   const [publicKey, setPublicKey] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
   const [showMyLots, setShowMyLots] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [myOwnedLots, setMyOwnedLots] = useState<LotFeature[]>([]);
   const { showAlert, AlertDialogComponent } = useAlertDialog();
   const { t, currentLanguage, toggleLanguage } = useAppTranslation();
@@ -433,6 +434,44 @@ function App() {
         </div>
       )}
 
+      {showLeaderboard && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: "500px" }}>
+            <div className="modal-header">
+              <h3 style={{ margin: 0 }}>🏆 {t("leaderboard.title")}</h3>
+              <button
+                className="close-btn"
+                onClick={() => setShowLeaderboard(false)}
+              >
+                &times;
+              </button>
+            </div>
+            <div style={{ marginTop: "1rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "50px 1fr 100px", gap: "10px", padding: "10px", background: "rgba(255,255,255,0.1)", borderRadius: "8px", fontWeight: "bold", fontSize: "0.9rem", color: "#a1a1aa" }}>
+                <span>{t("leaderboard.rank")}</span>
+                <span>{t("leaderboard.wallet")}</span>
+                <span style={{ textAlign: "right" }}>{t("leaderboard.lots")}</span>
+              </div>
+              <div style={{ maxHeight: "400px", overflowY: "auto", marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {[
+                  { wallet: "GAQP...MZN1", lots: 45 },
+                  { wallet: "GBL3...9Q2A", lots: 23 },
+                  { wallet: "GCDX...4V8L", lots: 12 },
+                  { wallet: "GBZZ...KPW9", lots: 8 },
+                  { wallet: "GCFY...7RT5", lots: 5 },
+                ].map((donator, index) => (
+                  <div key={index} style={{ display: "grid", gridTemplateColumns: "50px 1fr 100px", gap: "10px", padding: "12px 10px", background: "rgba(255,255,255,0.03)", borderRadius: "8px", alignItems: "center", border: "1px solid rgba(100, 117, 88, 0.3)" }}>
+                    <span style={{ fontSize: "1.2rem", fontWeight: "bold", color: index < 3 ? "#fbbf24" : "#a1a1aa" }}>#{index + 1}</span>
+                    <span style={{ fontFamily: "monospace", color: "#fff" }}>{donator.wallet}</span>
+                    <span style={{ textAlign: "right", color: "#647558", fontWeight: "bold" }}>{donator.lots}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="header">
         <h1>
           <img
@@ -468,6 +507,20 @@ function App() {
           </div>
         </h1>
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <button
+            className="connect-wallet-btn"
+            style={{
+              background: "transparent",
+              color: "white",
+              padding: "8px 12px",
+              whiteSpace: "nowrap",
+              fontSize: "1.2rem",
+            }}
+            onClick={() => setShowLeaderboard(true)}
+            title={t("leaderboard.title")}
+          >
+            🏆
+          </button>
           {myOwnedLots.length > 0 && (
             <button
               className="connect-wallet-btn"

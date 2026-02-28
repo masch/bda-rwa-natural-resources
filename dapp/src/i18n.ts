@@ -22,6 +22,12 @@ const resources = {
         no_parcels: "You have no parcels in your collection yet.",
         protected_minted: "Protected & Minted",
       },
+      leaderboard: {
+        title: "Top Conservers",
+        rank: "Rank",
+        wallet: "Donator",
+        lots: "Conserved Parcels",
+      },
       map: {
         legend: {
           donated: "Donated (Natural Reserve)",
@@ -69,6 +75,12 @@ const resources = {
         my_parcels: "Mis Parcelas (Reserva)",
         no_parcels: "Aún no tienes parcelas en tu colección.",
         protected_minted: "Protegida y Acuñada",
+      },
+      leaderboard: {
+        title: "Top Conservadores",
+        rank: "Puesto",
+        wallet: "Donante",
+        lots: "Parcelas Conservadas",
       },
       map: {
         legend: {
