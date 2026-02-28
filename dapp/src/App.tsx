@@ -301,7 +301,10 @@ function App() {
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h3>{t("modal.title")}</h3>
+              <h3 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                {t("modal.title")}
+                <img src={`${import.meta.env.BASE_URL}tabaquillo.png`} alt="Tabaquillo tree" style={{ width: "24px", height: "24px", objectFit: "contain" }} />
+              </h3>
               <button className="close-btn" onClick={() => setShowModal(false)}>
                 &times;
               </button>
@@ -374,7 +377,7 @@ function App() {
                         alignItems: "center",
                       }}
                     >
-                      <span>🌿</span>
+                      <img src={`${import.meta.env.BASE_URL}tabaquillo.png`} alt="Tabaquillo tree" style={{ width: "32px", height: "32px", objectFit: "contain" }} />
                       <span
                         style={{
                           fontSize: "0.7rem",
@@ -469,7 +472,12 @@ function App() {
               }}
               onClick={() => setShowMyLots(true)}
             >
-              🌿 {myOwnedLots.length}
+              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <img src={`${import.meta.env.BASE_URL}tabaquillo.png`} alt="Tabaquillo tree" style={{ width: "18px", height: "18px", objectFit: "contain" }} />
+                <span>
+                  {myOwnedLots.length}
+                </span>
+              </span>
             </button>
           )}
           <button
@@ -482,7 +490,7 @@ function App() {
             }}
             onClick={toggleLanguage}
           >
-            {currentLanguage === "es" ? "🇺🇸" : "🇪🇸"}
+            {currentLanguage === "es" ? "🇪🇸" : "🇺🇸"}
           </button>
           <button
             className="connect-wallet-btn"
