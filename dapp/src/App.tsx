@@ -62,8 +62,10 @@ function App() {
         const bbox = turf.bbox(polyFc);
         const totalAreaSqM = turf.area(polyFc);
 
-        // Target 500 lots. Start by estimating the side of each square.
-        let lotSideKm = Math.sqrt(totalAreaSqM / 500) / 1000;
+        // Target configured lots. Start by estimating the side of each square.
+        const TARGET_LOTS =
+          Number(import.meta.env.PUBLIC_NUMBER_OF_LOTS) || 500;
+        let lotSideKm = Math.sqrt(totalAreaSqM / TARGET_LOTS) / 1000;
         let grid = turf.squareGrid(bbox, lotSideKm, { units: "kilometers" });
 
         let intersecting = grid.features.filter((cell) =>
@@ -72,7 +74,7 @@ function App() {
 
         // Adjust resolution if we didn't get enough lots inside the polygon
         let attempts = 0;
-        while (intersecting.length < 500 && attempts < 10) {
+        while (intersecting.length < TARGET_LOTS && attempts < 10) {
           lotSideKm *= 0.9;
           grid = turf.squareGrid(bbox, lotSideKm, { units: "kilometers" });
           intersecting = grid.features.filter((cell) =>
@@ -81,16 +83,19 @@ function App() {
           attempts++;
         }
 
-        // Take exactly 500 lots
-        const exact500 = intersecting.slice(0, 500);
+        // Take exactly TARGET_LOTS lots
+        const exactLots = intersecting.slice(0, TARGET_LOTS);
 
-        // Let's create an array of 83 donated
-        const statuses = Array(500).fill("available");
-        for (let i = 0; i < 83; i++) statuses[i] = "donated";
+        // Let's create an array of donated lots
+        const statuses = Array(TARGET_LOTS).fill("available");
+        const DONATED_PERCENT =
+          Number(import.meta.env.PUBLIC_DONATED_PERCENT) || 16.6;
+        const DONATED_LOTS = Math.floor((DONATED_PERCENT / 100) * TARGET_LOTS);
+        for (let i = 0; i < DONATED_LOTS; i++) statuses[i] = "donated";
         statuses.sort(() => Math.random() - 0.5);
 
-        const parsedLots: LotFeature[] = exact500.map((f, idx) => {
-          const tokenId = idx + 1; // 1 to 500 since contract prevents token 0
+        const parsedLots: LotFeature[] = exactLots.map((f, idx) => {
+          const tokenId = idx + 1; // 1 to TARGET_LOTS since contract prevents token 0
           const lotId = `lot-${tokenId}`;
           let status: "donated" | "available" | "owned" = statuses[idx] as any;
 
