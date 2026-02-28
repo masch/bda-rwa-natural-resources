@@ -328,7 +328,14 @@ function App() {
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "600px" }}>
             <div className="modal-header">
-              <h3>{t("modal.my_parcels")}</h3>
+              <h3 style={{ display: "flex", alignItems: "center", gap: "10px", margin: 0 }}>
+                {t("modal.my_parcels")}
+                {myOwnedLots.length > 0 && (
+                  <span style={{ fontSize: "1rem", color: "#647558", background: "rgba(100, 117, 88, 0.2)", padding: "2px 10px", borderRadius: "12px", display: "flex", alignItems: "center" }}>
+                    {myOwnedLots.length}
+                  </span>
+                )}
+              </h3>
               <button
                 className="close-btn"
                 onClick={() => setShowMyLots(false)}
