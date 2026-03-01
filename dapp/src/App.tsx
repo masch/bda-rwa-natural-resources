@@ -304,7 +304,15 @@ function App() {
             <div className="modal-header">
               <h3 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 {t("modal.title")}
-                <img src={`${import.meta.env.BASE_URL}tabaquillo.png`} alt="Tabaquillo tree" style={{ width: "24px", height: "24px", objectFit: "contain" }} />
+                <img
+                  src={`${import.meta.env.BASE_URL}tabaquillo.png`}
+                  alt="Tabaquillo tree"
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                    objectFit: "contain",
+                  }}
+                />
               </h3>
               <button className="close-btn" onClick={() => setShowModal(false)}>
                 &times;
@@ -329,10 +337,27 @@ function App() {
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "600px" }}>
             <div className="modal-header">
-              <h3 style={{ display: "flex", alignItems: "center", gap: "10px", margin: 0 }}>
+              <h3
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  margin: 0,
+                }}
+              >
                 {t("modal.my_parcels")}
                 {myOwnedLots.length > 0 && (
-                  <span style={{ fontSize: "1rem", color: "#647558", background: "rgba(100, 117, 88, 0.2)", padding: "2px 10px", borderRadius: "12px", display: "flex", alignItems: "center" }}>
+                  <span
+                    style={{
+                      fontSize: "1rem",
+                      color: "#647558",
+                      background: "rgba(100, 117, 88, 0.2)",
+                      padding: "2px 10px",
+                      borderRadius: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
                     {myOwnedLots.length}
                   </span>
                 )}
@@ -385,7 +410,15 @@ function App() {
                         alignItems: "center",
                       }}
                     >
-                      <img src={`${import.meta.env.BASE_URL}tabaquillo.png`} alt="Tabaquillo tree" style={{ width: "32px", height: "32px", objectFit: "contain" }} />
+                      <img
+                        src={`${import.meta.env.BASE_URL}tabaquillo.png`}
+                        alt="Tabaquillo tree"
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          objectFit: "contain",
+                        }}
+                      />
                       <span
                         style={{
                           fontSize: "0.7rem",
@@ -447,12 +480,35 @@ function App() {
               </button>
             </div>
             <div style={{ marginTop: "1rem" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "50px 1fr 100px", gap: "10px", padding: "10px", background: "rgba(255,255,255,0.1)", borderRadius: "8px", fontWeight: "bold", fontSize: "0.9rem", color: "#a1a1aa" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "50px 1fr 100px",
+                  gap: "10px",
+                  padding: "10px",
+                  background: "rgba(255,255,255,0.1)",
+                  borderRadius: "8px",
+                  fontWeight: "bold",
+                  fontSize: "0.9rem",
+                  color: "#a1a1aa",
+                }}
+              >
                 <span>{t("leaderboard.rank")}</span>
                 <span>{t("leaderboard.wallet")}</span>
-                <span style={{ textAlign: "right" }}>{t("leaderboard.lots")}</span>
+                <span style={{ textAlign: "right" }}>
+                  {t("leaderboard.lots")}
+                </span>
               </div>
-              <div style={{ maxHeight: "400px", overflowY: "auto", marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div
+                style={{
+                  maxHeight: "400px",
+                  overflowY: "auto",
+                  marginTop: "10px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
+                }}
+              >
                 {[
                   { wallet: "GAQP...MZN1", lots: 45 },
                   { wallet: "GBL3...9Q2A", lots: 23 },
@@ -460,10 +516,40 @@ function App() {
                   { wallet: "GBZZ...KPW9", lots: 8 },
                   { wallet: "GCFY...7RT5", lots: 5 },
                 ].map((donator, index) => (
-                  <div key={index} style={{ display: "grid", gridTemplateColumns: "50px 1fr 100px", gap: "10px", padding: "12px 10px", background: "rgba(255,255,255,0.03)", borderRadius: "8px", alignItems: "center", border: "1px solid rgba(100, 117, 88, 0.3)" }}>
-                    <span style={{ fontSize: "1.2rem", fontWeight: "bold", color: index < 3 ? "#fbbf24" : "#a1a1aa" }}>#{index + 1}</span>
-                    <span style={{ fontFamily: "monospace", color: "#fff" }}>{donator.wallet}</span>
-                    <span style={{ textAlign: "right", color: "#647558", fontWeight: "bold" }}>{donator.lots}</span>
+                  <div
+                    key={index}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "50px 1fr 100px",
+                      gap: "10px",
+                      padding: "12px 10px",
+                      background: "rgba(255,255,255,0.03)",
+                      borderRadius: "8px",
+                      alignItems: "center",
+                      border: "1px solid rgba(100, 117, 88, 0.3)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "1.2rem",
+                        fontWeight: "bold",
+                        color: index < 3 ? "#fbbf24" : "#a1a1aa",
+                      }}
+                    >
+                      #{index + 1}
+                    </span>
+                    <span style={{ fontFamily: "monospace", color: "#fff" }}>
+                      {donator.wallet}
+                    </span>
+                    <span
+                      style={{
+                        textAlign: "right",
+                        color: "#647558",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {donator.lots}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -532,11 +618,19 @@ function App() {
               }}
               onClick={() => setShowMyLots(true)}
             >
-              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <img src={`${import.meta.env.BASE_URL}tabaquillo.png`} alt="Tabaquillo tree" style={{ width: "18px", height: "18px", objectFit: "contain" }} />
-                <span>
-                  {myOwnedLots.length}
-                </span>
+              <span
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                <img
+                  src={`${import.meta.env.BASE_URL}tabaquillo.png`}
+                  alt="Tabaquillo tree"
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    objectFit: "contain",
+                  }}
+                />
+                <span>{myOwnedLots.length}</span>
               </span>
             </button>
           )}

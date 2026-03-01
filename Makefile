@@ -12,14 +12,14 @@ ifndef admin
    override admin = mando-$(network)
 endif
 
-ifndef payment_token
+ifndef payment_token_contract
    # Default USDC testnet token (or any valid stellar asset for testing)
-   override payment_token = CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA
+   override payment_token_contract = CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA
 endif
 
-ifndef payment_asset
-   # Default USDC testnet asset (or any valid stellar asset for testing)
-   override payment_asset = GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
+ifndef payment_token_issued
+   # Default USDC testnet token (or any valid stellar asset for testing)
+   override payment_token_issued = USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
 endif
 
 override boscora_nft_id = $(shell cat .stellar/boscora_nft_id-$(network))
@@ -112,7 +112,7 @@ contract_deploy:  ## Deploy Soroban contract to testnet
   		--admin $(shell stellar keys address $(admin)) \
   		--oracle $$(cat .stellar/boscora_oracle_id-$(network)) \
   		--max_parcels 2500 \
-		--payment_token $(payment_token) \
+		--payment_token $(payment_token_contract) \
 		--price 10000000 \
   		> .stellar/boscora_nft_id-$(network)
 	@echo "NFT deployed at: $$(cat .stellar/boscora_nft_id-$(network))"
@@ -131,7 +131,7 @@ change-trust: ## Change trust line to allow to receive token asset
 	stellar tx new change-trust \
 		--source-account $(admin) \
 		--network ${network} \
-		--line USDC:$(payment_asset)
+		--line ${payment_token_issued}
 
 sync-env: ## Sync contract ID to website env
 	@if grep -q "^PUBLIC_BOSCORA_NFT_CONTRACT_ID=" dapp/.env; then \

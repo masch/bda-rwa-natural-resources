@@ -94,8 +94,7 @@ const resources = {
       },
       sidebar: {
         title: "Tu Contribución",
-        empty_line1:
-          "Haz clic en los lotes disponibles conservarlos.",
+        empty_line1: "Haz clic en los lotes disponibles conservarlos.",
         empty_line2: "",
         lot_subtitle: "Parcela Conservación",
         subtotal: "Subtotal",

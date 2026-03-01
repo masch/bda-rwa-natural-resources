@@ -4,7 +4,6 @@ const requiredEnv = [
   "PUBLIC_HORIZON_URL",
   "PUBLIC_BOSCORA_NFT_CONTRACT_ID",
   "PUBLIC_BOSCORA_NFT_OWNER_ID",
-  "PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID",
   "PUBLIC_DELEGATION_API_URL",
 ];
 
@@ -35,7 +34,6 @@ export function validateFreighterEnvironment(): {
     "PUBLIC_SOROBAN_RPC_URL",
     "PUBLIC_HORIZON_URL",
     "PUBLIC_BOSCORA_NFT_CONTRACT_ID",
-    "PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID",
   ];
 
   for (const envVar of requiredEnvVars) {
@@ -77,13 +75,6 @@ export function validateFreighterEnvironment(): {
   if (contractId && !/^[A-Z0-9]{56}$/.test(contractId)) {
     warnings.push(
       "PUBLIC_BOSCORA_NFT_CONTRACT_ID should be a valid 56-character Stellar address",
-    );
-  }
-
-  const domainContractId = import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID;
-  if (domainContractId && !/^[A-Z0-9]{56}$/.test(domainContractId)) {
-    warnings.push(
-      "PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID should be a valid 56-character Stellar address",
     );
   }
 
