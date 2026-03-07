@@ -1,9 +1,10 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, Address, Env};
+use soroban_sdk::{contract, contractimpl, panic_with_error, Address, Env};
 use stellar_access::ownable::{self, Ownable};
 use stellar_macros::only_owner;
 
+mod errors;
 mod events;
 #[cfg(test)]
 mod tests;
@@ -68,7 +69,7 @@ impl BoscoraOracle {
             1 => HealthStatus::Sprouted,
             2 => HealthStatus::ReadyForTransplant,
             3 => HealthStatus::Planted,
-            _ => panic!("invalid health status"),
+            _ => panic_with_error!(&env, errors::ContractErrors::InvalidHealthStatus),
         };
 
         let metrics = ImpactMetrics {

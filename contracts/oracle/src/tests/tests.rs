@@ -58,7 +58,6 @@ fn test_oracle_update_impact_metrics() {
 }
 
 #[test]
-#[should_panic]
 fn test_oracle_update_impact_metrics_invalid_health() {
     let env = Env::default();
     env.mock_all_auths();
@@ -68,8 +67,9 @@ fn test_oracle_update_impact_metrics_invalid_health() {
     let client = BoscoraOracleClient::new(&env, &contract_id);
 
     let asset_id = 3;
-    // 4 is an invalid health status and should panic
-    client.update_impact_metrics(&asset_id, &7500, &1500, &4);
+    // 4 is an invalid health status and should return InvalidHealthStatus (0)
+    let result = client.try_update_impact_metrics(&asset_id, &7500, &1500, &4);
+    assert_eq!(result, Err(Ok(soroban_sdk::Error::from_contract_error(0))));
 }
 
 #[test]
