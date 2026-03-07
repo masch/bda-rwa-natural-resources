@@ -1,32 +1,14 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env};
+use soroban_sdk::{contract, contractimpl, Address, Env};
 use stellar_access::ownable::{self, Ownable};
 use stellar_macros::only_owner;
 
-// --- Data Structures ---
+#[cfg(test)]
+mod tests;
 
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum HealthStatus {
-    Germinating = 0,
-    Sprouted = 1,
-    ReadyForTransplant = 2,
-    Planted = 3,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ImpactMetrics {
-    pub biomass: i128,      // In grams
-    pub co2_captured: i128, // In milligrams
-    pub health: HealthStatus,
-}
-
-#[contracttype]
-pub enum DataKey {
-    OracleData(u32), // asset_id -> ImpactMetrics
-}
+pub mod types;
+use types::{DataKey, HealthStatus, ImpactMetrics};
 
 // --- Oracle Contract (SEP-40 & Extensions) ---
 
