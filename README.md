@@ -122,23 +122,30 @@ impacta/
 -   Rust & Cargo
 -   [Stellar CLI](https://developers.stellar.org/docs/build/smart-contracts/getting-started/setup#install-the-stellar-cli)
 
-### Build & Test
+### Core Makefile Commands
 
-The project uses a root-level workspace for simplified management:
+We provide a comprehensive `Makefile` in the root folder to automate testing, frontend execution, and testnet deployments. Here are the most important commands:
 
-```bash
-# Clone the repository
-git clone https://github.com/Bosques de Agua/impacta.git
-cd impacta/contracts
+**DApp (Frontend)**
+- `make dapp_install`: Install all frontend dependencies via `bun`.
+- `make dapp`: Run the local development server for the React DApp.
 
-# Run comprehensive integration tests
-make test
+**Smart Contracts Lifecycle**
+- `make contract_build`: Builds both Oracle and NFT contracts to WASM.
+- `make contract_test`: Runs full Rust unit and integration test suites.
+- `make contract_build-release`: Optimizes WASM files for deployment.
+- `make contract_deploy`: Deploys contracts to the Soroban Testnet and logs their IDs.
+- `make contract_bindings`: Auto-generates TypeScript bindings from WASM, installs them into the UI, and formats the code.
 
-# Build all contracts (WASM)
-make build
-```
+**Network & Environment Setup**
+- `make prepare`: Configures stellar network CLI, generates keys, and adds fresh testnet accounts.
+- `make funds`: Requests Friendbot funds for deployed testnet accounts.
+- `make sync-env`: Synchronizes the newly deployed `PUBLIC_BOSCORA_NFT_CONTRACT_ID` into the DApp's `.env` and GitHub Action files.
 
----
+**The "Do It All" Playbook**
+- `make testnet_reset`: Single command to execute the full lifecycle: gets funds, mints trustlines, generates bindings, deploys all contracts, and syncs env variables.
+
+*Run `make help` to see the full list of available commands directly in your terminal.*
 
 ## 📊 Technical Specifications
 
