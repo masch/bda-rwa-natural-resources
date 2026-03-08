@@ -1,6 +1,13 @@
-# 🌳 **Website** ⛰️: [BDA RWA Natural Resources](https://masch.github.io/bda-rwa-natural-resources)
+<h1 align="center">⛰️<a href="https://masch.github.io/bda-rwa-natural-resources">BDA RWA Natural Resources</a>🌳 </h1>
 
-# Bosques de Agua: Reforestation & Dynamic Impact Ecosystem
+
+<div align="center">
+  <a href="https://bosquesdeagua.ar/">
+    <img src="images/cropped-logo-blanco-big.webp" alt="logo" width="500"/>
+  </a>
+  </br>
+  </br>
+</div>
 
 Bosques de Agua is a decentralized ecosystem built on **Stellar Soroban** to tokenize and monitor reforestation projects. By bridging real-world assets (RWA) with on-chain transparency, Bosques de Agua allows investors to own specific parcels of land while receiving real-time ecological data.
 
