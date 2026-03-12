@@ -11,17 +11,14 @@
 
 Bosques de Agua is a decentralized ecosystem built on **Stellar Soroban** to tokenize and monitor reforestation projects. By bridging real-world assets (RWA) with on-chain transparency, Bosques de Agua allows investors to own specific parcels of land while receiving real-time ecological data.
 
-## 🏗 Architecture Overview
+## Architecture Overview
 
 The system is designed with a **Modular Oracle-NFT Architecture** to handle dynamic environmental data efficiently:
 
 1.  **Bosques de Agua Oracle (SEP-40)**: Acting as the single source of truth for environmental metrics. It receives data from IoT sensors (e.g., Raspberry Pi) and stores dynamic values like biomass, CO2 capture, and plant health.
 2.  **Bosques de Agua NFT (SEP-50)**: Represents ownership of a specific reforestation parcel. Instead of relying on static metadata (SEP-11), it performs **Cross-Contract Calls** to the Oracle to provide live impact data.
 
-
-
-
-## 🌟 Key Features
+## Key Features
 -   **Interactive Map Interface**: Visual frontend tracking parcels, dynamically loading geometries to allow direct geographical selection of real-world land.
 -   **Dynamic Impact Tracking (Oracle)**: Real-time monitoring of biomass (grams), CO2 captured (milligrams), and plant health status via IoT endpoints.
 -   **Cross-Contract Communication**: The SEP-50 NFT contract performs live cross-contract calls to the SEP-40 Oracle to fetch live metrics directly on-chain.
@@ -31,7 +28,29 @@ The system is designed with a **Modular Oracle-NFT Architecture** to handle dyna
 -   **IoT-Native Security**: Restricted write access via `stellar-access` ensures only authorized sensor nodes can update the environmental Oracle metrics.
 
 
-## 🗺️ Architecture Diagram
+## Architecture
+
+### High-Level System Architecture
+```mermaid
+graph TD
+    User["🌍 Global Donor (User)"]
+    DApp["💻 Boscora DApp (React)"]
+    Backend["⚙️ Boscora Backend & IoT (Node.js/RPi)"]
+    Stellar["🔗 Stellar Network"]
+    Ramps["🏦 Fiat On/Off-Ramps (Anclap, Bitso, MoneyGram)"]
+    Field["🌱 Real-World Ecosystem (Sensors & Workers)"]
+
+    User -->|Explores parcels & donates USDC| DApp
+    DApp -->|API Calls| Backend
+    DApp -->|Signs TX with Freighter| Stellar
+    Backend -->|Pushes IoT metrics - Biomass, CO2| Stellar
+    Stellar -->|Transfers USDC| Ramps
+    Ramps -->|Converts USDC to Fiat ARS| Field
+    Field -->|IoT Telemetry| Backend
+```
+
+### Components
+
 ```mermaid
 ---
 title: Bosques de Agua - Architecture Diagram
@@ -87,7 +106,41 @@ flowchart TD
     style Multisig fill:#fde68a,stroke:#d97706,stroke-width:2px,color:#000
 ```
 
-## 🛠 Project Structure
+### The $1 USDC Donation & Minting Flow
+
+```mermaid
+---
+title: Bosques de Agua - Architecture Diagram
+---
+sequenceDiagram
+    participant User
+    participant DApp as Boscora React DApp
+    participant Freighter as Freighter Wallet
+    participant Soroban as Stellar (Soroban)
+    participant NFT as SEP-50 NFT Contract
+    participant Oracle as SEP-40 Oracle Contract
+    participant Treasury as Multisig Treasury
+
+    User->>DApp: Selects Parcel & Clicks "Protect for 1 USDC"
+    DApp->>Freighter: Requests connection & signature via stellar-wallets-kit
+    Freighter-->>User: Prompts for TX approval
+    User->>Freighter: Approves 1 USDC transfer & Mint
+    Freighter->>Soroban: Submits Transaction
+    
+    rect rgb(230, 240, 255)
+        Note over Soroban,Treasury: Smart Contract Execution
+        Soroban->>Treasury: Routes 1 USDC to Multisig Wallet
+        Soroban->>NFT: Calls `mint(geo_coordinates)`
+        NFT->>Oracle: Calls `get_live_impact()` (Cross-contract)
+        Oracle-->>NFT: Returns live Biomass, CO2 & Health Status
+        NFT-->>Soroban: NFT Minted with dynamic metadata URI (IPNS)
+    end
+    
+    Soroban-->>DApp: Transaction Success (NFT Minted)
+    DApp-->>User: Displays "You are a Guardian" & shows live parcel data
+```
+
+##  Project Structure
 
 ```text
 /
@@ -122,7 +175,7 @@ flowchart TD
 
 ---
 
-## 🌐 Bosques de Agua Ecosystem
+## Bosques de Agua Ecosystem
 
 This smart contract and DApp repository operates as part of a larger interoperable ecosystem for direct IoT-to-Blockchain integration. You can explore the hardware and control layers in their respective repositories:
 
@@ -131,7 +184,7 @@ This smart contract and DApp repository operates as part of a larger interoperab
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -163,7 +216,7 @@ We provide a comprehensive `Makefile` in the root folder to automate testing, fr
 
 *Run `make help` to see the full list of available commands directly in your terminal.*
 
-## 📊 Technical Specifications
+## Technical Specifications
 
 ### Impact Metrics (Oracle)
 -   **Biomass**: `i128` (Grams)
@@ -182,6 +235,6 @@ We provide a comprehensive `Makefile` in the root folder to automate testing, fr
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
